@@ -1,0 +1,101 @@
+<body onerror="alert(e)"">
+  <style type="text/css" media="screen">
+    #editor { 
+      position: relative;
+        width: 1520px;
+        height: 250px;
+      top: 25px;
+      }
+</style>
+  <div style="position:fixed; top:0; left:0; bottom:0; right:0; width:100%; height:100%; border:none; margin:0; padding:0; overflow:hidden; z-index:999999; background: white; display: none;" id="resize_alert">
+<p style="position: fixed; transform: translate(-50%, -50%); top: 50%; left: 50%;"> Please resize your browser window or zoom out to view this page. </p>
+</div>
+    
+<script src="https://cdnjs.cloudflare.com/ajax/libs/ace/1.4.13/ace.js" type="text/javascript" charset="utf-8"></script>
+
+<script src="//ruffle-storage.glitch.me/ruffle.js"></script>
+<button onclick="exec()" style="position: absolute;"> Compile and view </button>
+<div id="editor">import flash.display.Sprite;
+import flash.display.Shape;
+
+public class Main extends Sprite {
+    public function Main() {
+ var rectangle:Shape = new Shape; // initializing the variable named rectangle
+rectangle.graphics.beginFill(0xFF0000); // choosing the colour for the fill, here it is red
+rectangle.graphics.drawRect(0, 0, 100,100); // (x spacing, y spacing, width, height)
+rectangle.graphics.endFill(); // not always needed but I like to put it in to end the fill
+addChild(rectangle); // adds the rectangle to the stage
+    }
+}</div>
+  <br></br>
+  <div id="container" style="width: 750px; right: 50%;">
+    <p id="not_ran"></p>
+  </div> 
+<textarea id="logs" placeholder="Logs here.." style="position: absolute; width: 750px; height: 400px;"></textarea>
+  <script>
+    if (Math.round(window.devicePixelRatio * 100) < 88 || Math.round(window.devicePixelRatio * 100) == 88) {
+document.querySelector("#resize_alert").style.display = "none";
+} else {
+document.querySelector("#resize_alert").style.display = "block";
+}
+
+    onresize = function(){
+        if (Math.round(window.devicePixelRatio * 100) < 88 || Math.round(window.devicePixelRatio * 100) == 88) {
+document.querySelector("#resize_alert").style.display = "none";
+} else {
+document.querySelector("#resize_alert").style.display = "block";
+}
+    }
+    
+     var editor = ace.edit("editor");
+    editor.setTheme("ace/theme/monokai");
+    editor.session.setMode("ace/mode/actionscript");
+  
+        var RufflePlayer = window.RufflePlayer || {};
+  window.player = RufflePlayer.newest().createPlayer();
+  player.style="background-color: white; position: absolute; width: 750px; left: 50%; border-style: solid; border-width: 1px; border-color: grey;";
+      player.config = {
+    autoplay: "auto",
+    "contextMenu": false,
+    warnOnUnsupportedContent: false
+}; 
+                        const container = document.getElementById("container");
+            container.appendChild(player);
+  function exec() {
+    document.querySelector("button").disabled = true;
+    document.querySelector("button").innerText = "Compiling..."
+  fetch('https://as-online.seven7four4.repl.co/api/generate_from_code', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                    code: editor.getValue()
+                })
+})
+                .then(res => res.json())
+                .then(data => {
+                  window.data = data;
+    player.load(data.path);
+                  document.querySelector("button").disabled = false;
+                      document.querySelector("button").innerText = "Compile and view"
+    document.querySelector("#logs").innerText =  document.querySelector("#logs").innerText  + data.logs.split("/home").join("\n\n/home");
+                })
+  }
+
+  document.body.onbeforeunload = function(){
+        fetch('https://as-online.seven7four4.repl.co/api/remove', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify({
+                    path: data.path.split("/")[1]
+                })
+        }).then(res => res.text())
+                .then(res => {
+                  alert(res + " Quitting..");
+                });
+  }
+      </script>
+</body>

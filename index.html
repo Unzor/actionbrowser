@@ -76,7 +76,7 @@ document.querySelector("#resize_alert").style.display = "block";
                 .then(res => res.json())
                 .then(data => {
                   window.data = data;
-    player.load(data.path);
+    player.load("https://as-online.seven7four4.repl.co/" + data.path);
                   document.querySelector("button").disabled = false;
                       document.querySelector("button").innerText = "Compile and view"
     document.querySelector("#logs").innerText =  document.querySelector("#logs").innerText  + data.logs.split("/home").join("\n\n/home");
